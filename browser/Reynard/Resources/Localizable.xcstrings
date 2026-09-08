@@ -2179,6 +2179,17 @@
         }
       }
     },
+    "1. Install libimobiledevice by following the instructions at %@.\n2. Connect this device to your computer using USB, then tap Trust when prompted.\n3. In Terminal, run iproxy %d:%d and leave it running.\n4. In Firefox on your computer, open about:debugging and select Setup.\n5. Under Network Location, add localhost:%d, then select Connect." : {
+      "comment" : "Remote debugging setup instructions; port placeholders",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1. Install libimobiledevice by following the instructions at %1$@.\n2. Connect this device to your computer using USB, then tap Trust when prompted.\n3. In Terminal, run iproxy %2$d:%3$d and leave it running.\n4. In Firefox on your computer, open about:debugging and select Setup.\n5. Under Network Location, add localhost:%4$d, then select Connect."
+          }
+        }
+      }
+    },
     "A Developer Disk Image download is already in progress." : {
       "localizations" : {
         "cs" : {
@@ -9645,6 +9656,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "詳細資訊"
+          }
+        }
+      }
+    },
+    "Developer" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Developer"
           }
         }
       }
@@ -18545,6 +18566,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新載入頁面"
+          }
+        }
+      }
+    },
+    "Remote Debugging" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remote Debugging"
+          }
+        }
+      }
+    },
+    "Remote Debugging Port" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remote Debugging Port"
+          }
+        }
+      }
+    },
+    "Remote Debugging via USB" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remote Debugging via USB"
           }
         }
       }

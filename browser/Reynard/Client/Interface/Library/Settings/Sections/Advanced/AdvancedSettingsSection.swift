@@ -9,6 +9,7 @@ import UIKit
 
 struct AdvancedSettingsSection {
     enum Row: CaseIterable {
+        case developer
         case compatibility
     }
     
@@ -22,6 +23,8 @@ struct AdvancedSettingsSection {
         }
         
         switch Row.allCases[index] {
+        case .developer:
+            return SettingsViewUtils.disclosureCell(title: NSLocalizedString("Developer", comment: ""))
         case .compatibility:
             return SettingsViewUtils.disclosureCell(title: NSLocalizedString("Compatibility", comment: ""))
         }
@@ -33,6 +36,9 @@ struct AdvancedSettingsSection {
         }
         
         switch Row.allCases[index] {
+        case .developer:
+            let destination = DeveloperPreferencesViewController()
+            viewController.navigationController?.pushViewController(destination, animated: true)
         case .compatibility:
             let destination = CompatibilityPreferencesViewController()
             viewController.navigationController?.pushViewController(destination, animated: true)
