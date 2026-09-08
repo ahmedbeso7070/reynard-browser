@@ -423,7 +423,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
             0,
             unshiftedFrame.height - keyboardOverlap - UX.focusedInputBottomClearance
         )
-        return max(0, focusBottom - visibleBottom)
+        return min(keyboardOverlap, max(0, focusBottom - visibleBottom))
     }
     
     func resetFocusedInputRelocation(
