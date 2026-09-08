@@ -379,7 +379,11 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
         animationDuration: TimeInterval,
         animationOptions: UIView.AnimationOptions
     ) {
-        guard let session else {
+        guard let session,
+              let engineView = session.engineView,
+              engineView.isFirstResponder,
+              let textInput = engineView as? UITextInput,
+              let selectedTextRange = textInput.selectedTextRange else {
             resetFocusedInputRelocation(
                 animationDuration: animationDuration,
                 animationOptions: animationOptions
@@ -387,9 +391,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
             return
         }
         
-        let engineView = session.engineView!
-        let textInput = engineView as! UITextInput
-        let caretRect = textInput.caretRect(for: textInput.selectedTextRange!.end)
+        let caretRect = textInput.caretRect(for: selectedTextRange.end)
         let focusedInputBottom = engineView.convert(caretRect, to: self).maxY
         superview?.layoutIfNeeded()
         let newOffset = calculateFocusedInputOffset(
@@ -988,5 +990,4 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
     func removeOverlayController(for page: OverlayContentView.Page) {
         overlayContentView.removeController(for: page)
     }
-    
 }
