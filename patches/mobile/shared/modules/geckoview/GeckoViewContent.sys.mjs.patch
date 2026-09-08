@@ -1,5 +1,5 @@
 diff --git a/mobile/shared/modules/geckoview/GeckoViewContent.sys.mjs b/mobile/shared/modules/geckoview/GeckoViewContent.sys.mjs
-index 635806ea1724..dff6773c5ffc 100644
+index 635806ea1724..e11eb5815d0c 100644
 --- a/mobile/shared/modules/geckoview/GeckoViewContent.sys.mjs
 +++ b/mobile/shared/modules/geckoview/GeckoViewContent.sys.mjs
 @@ -3,6 +3,7 @@
@@ -10,29 +10,25 @@ index 635806ea1724..dff6773c5ffc 100644
  
  export class GeckoViewContent extends GeckoViewModule {
    onInit() {
-@@ -13,6 +14,8 @@ export class GeckoViewContent extends GeckoViewModule {
+@@ -13,6 +14,7 @@ export class GeckoViewContent extends GeckoViewModule {
        "GeckoView:FindInPage",
        "GeckoView:RestoreState",
        "GeckoView:ContainsFormData",
 +      "GeckoView:Autofill:FillOneTimeCode",
-+      "GeckoView:GetFocusedInputMetrics",
        "GeckoView:ProcessBackPressed",
        "GeckoView:ScrollBy",
        "GeckoView:ScrollTo",
-@@ -277,6 +280,12 @@ export class GeckoViewContent extends GeckoViewModule {
+@@ -277,6 +279,9 @@ export class GeckoViewContent extends GeckoViewModule {
        case "GeckoView:GetBrokenSiteReport":
          this._getBrokenSiteReport(aCallback);
          break;
 +      case "GeckoView:Autofill:FillOneTimeCode":
 +        this._fillOneTimeCode(aData, aCallback);
 +        break;
-+      case "GeckoView:GetFocusedInputMetrics":
-+        this._getFocusedInputMetrics(aCallback);
-+        break;
        case "GeckoView:GetWebCompatInfo":
          this._getWebCompatInfo(aCallback);
          break;
-@@ -491,6 +500,39 @@ export class GeckoViewContent extends GeckoViewModule {
+@@ -491,6 +496,19 @@ export class GeckoViewContent extends GeckoViewModule {
      aCallback.onSuccess(await this.actor.containsFormData());
    }
  
@@ -46,26 +42,6 @@ index 635806ea1724..dff6773c5ffc 100644
 +      aCallback.onSuccess(result ?? false);
 +    } catch (error) {
 +      aCallback.onError(`Cannot fill one-time code, error: ${error}`);
-+    }
-+  }
-+
-+  async _getFocusedInputMetrics(aCallback) {
-+    try {
-+      if (this.window.windowUtils.isMozAfterPaintPending) {
-+        await new Promise(resolve => {
-+          this.window.addEventListener("MozAfterPaint", resolve, {
-+            capture: true,
-+            once: true,
-+          });
-+        });
-+      }
-+      const actor =
-+        Services.focus.focusedContentBrowsingContext?.currentWindowGlobal?.getActor(
-+          "GeckoViewContent"
-+        );
-+      aCallback.onSuccess(actor ? await actor.sendQuery("GetFocusedInputMetrics") : null);
-+    } catch (error) {
-+      aCallback.onError(`Cannot get focused input metrics, error: ${error}`);
 +    }
 +  }
 +

@@ -447,16 +447,6 @@ public class GeckoSession {
     }
     
     // Keyboard
-    public func focusedInputBottomRatio() async -> CGFloat? {
-        let response = try? await dispatcher.query(type: "GeckoView:GetFocusedInputMetrics")
-        guard let values = response as? [AnyHashable: Any],
-              let bottomRatioValue = values["bottomRatio"] else {
-            return nil
-        }
-        
-        return PayloadValue.cgFloat(bottomRatioValue)
-    }
-    
     @discardableResult
     public func focusForHardwareKeyboard() -> Bool {
         return window?.focusForHardwareKeyboard() ?? false
