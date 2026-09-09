@@ -10136,6 +10136,17 @@
         }
       }
     },
+    "Done" : {
+      "comment" : "Dismiss keyboard button",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
     "Download" : {
       "localizations" : {
         "cs" : {

@@ -9,7 +9,6 @@ import UIKit
 
 final class FindInPageActionBar: UIView, UITextFieldDelegate {
     private enum UX {
-        static let backgroundHeight: CGFloat = 62
         static let contentLeadingInset: CGFloat = 12
         static let contentMaximumWidth: CGFloat = 650
         static let searchBarToControlsSpacing: CGFloat = 12
@@ -304,8 +303,6 @@ final class FindInPageActionBar: UIView, UITextFieldDelegate {
         )
         
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(equalToConstant: UX.backgroundHeight),
-            
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),

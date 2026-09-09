@@ -64,6 +64,7 @@ final class BrowserChrome: UIView {
     var onFindInPage: ((_ query: String?, _ backwards: Bool) async -> (current: Int, total: Int)?)?
     var onClearFindInPage: (() -> Void)?
     var onFindInPageVisibilityChanged: ((Bool) -> Void)?
+    var onKeyboardDismissal: (() -> Void)?
     
     let addressBar: AddressBar = {
         let view = AddressBar()
@@ -236,6 +237,10 @@ final class BrowserChrome: UIView {
     }
     
     // MARK: - Action Bar
+    
+    var isShowingKeyboardDismissal: Bool {
+        return actionBar.isShowingKeyboardDismissal
+    }
     
     func showActionBar(_ item: ActionBar.Item, animated: Bool) {
         guard state?.presentation == .browsing,
@@ -556,6 +561,7 @@ final class BrowserChrome: UIView {
         }
         actionBar.onClearFindInPage = { [weak self] in self?.onClearFindInPage?() }
         actionBar.onClose = { [weak self] in self?.dismissActionBar(animated: true) }
+        actionBar.onKeyboardDismissal = { [weak self] in self?.onKeyboardDismissal?() }
     }
     
     // MARK: - Transitions

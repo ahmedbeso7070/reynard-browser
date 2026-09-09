@@ -7,6 +7,20 @@
 
 import UIKit
 
+enum ActionBarStyle {
+    case compact
+    case standard
+    
+    var height: CGFloat {
+        switch self {
+        case .compact:
+            return 41
+        case .standard:
+            return 62
+        }
+    }
+}
+
 final class ActionBar: UIView {
     private enum UX {
         static let closeButtonSize: CGFloat = 28
@@ -20,11 +34,14 @@ final class ActionBar: UIView {
         static let borderWidth: CGFloat = 0.5
     }
     
-    static let height: CGFloat = 62
-    
     enum Item: Equatable {
         case findInPage
         case pageZoom
+        case keyboardDismissal
+        
+        var style: ActionBarStyle {
+            return self == .keyboardDismissal ? .compact : .standard
+        }
     }
     
     var onFindInPage: ((_ query: String?, _ backwards: Bool) async -> (current: Int, total: Int)?)? {
@@ -53,6 +70,7 @@ final class ActionBar: UIView {
     }
     
     var onClose: (() -> Void)?
+    var onKeyboardDismissal: (() -> Void)?
     
     private(set) var item: Item?
     
@@ -60,9 +78,15 @@ final class ActionBar: UIView {
         return item == .findInPage && !isHidden
     }
     
+    var isShowingKeyboardDismissal: Bool {
+        return item == .keyboardDismissal && !isHidden
+    }
+    
     private let findInPageActionBar = FindInPageActionBar()
     private let pageZoomActionBar = PageZoomActionBar()
+    private let keyboardDismissalActionBar = KeyboardDismissalActionBar()
     private var hasPreparedFindInPageDismissal = false
+    private var heightConstraint: NSLayoutConstraint!
     
     private let closeShadowView: UIView = {
         let view = UIView()
@@ -119,6 +143,9 @@ final class ActionBar: UIView {
         findInPageActionBar.onDismiss = { [weak self] in
             self?.onClose?()
         }
+        keyboardDismissalActionBar.onDone = { [weak self] in
+            self?.onKeyboardDismissal?()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -154,9 +181,12 @@ final class ActionBar: UIView {
             findInPageActionBar.prepareForPresentation()
         }
         self.item = item
+        heightConstraint.constant = item?.style.height ?? ActionBarStyle.standard.height
         isHidden = item == nil
         findInPageActionBar.isHidden = item != .findInPage
         pageZoomActionBar.isHidden = item != .pageZoom
+        keyboardDismissalActionBar.isHidden = item != .keyboardDismissal
+        closeShadowView.isHidden = item == .keyboardDismissal
     }
     
     func prepareForDismissal() {
@@ -196,6 +226,7 @@ final class ActionBar: UIView {
     private func configureHierarchy() {
         addSubview(findInPageActionBar)
         addSubview(pageZoomActionBar)
+        addSubview(keyboardDismissalActionBar)
         addSubview(closeShadowView)
         closeShadowView.addSubview(closeBackground)
         closeShadowView.addSubview(closeButton)
@@ -203,8 +234,9 @@ final class ActionBar: UIView {
     }
     
     private func configureConstraints() {
+        heightConstraint = heightAnchor.constraint(equalToConstant: ActionBarStyle.standard.height)
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(equalToConstant: ActionBar.height),
+            heightConstraint,
             
             pageZoomActionBar.topAnchor.constraint(equalTo: topAnchor),
             pageZoomActionBar.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -215,6 +247,11 @@ final class ActionBar: UIView {
             findInPageActionBar.leadingAnchor.constraint(equalTo: leadingAnchor),
             findInPageActionBar.trailingAnchor.constraint(equalTo: trailingAnchor),
             findInPageActionBar.bottomAnchor.constraint(equalTo: bottomAnchor),
+            
+            keyboardDismissalActionBar.topAnchor.constraint(equalTo: topAnchor),
+            keyboardDismissalActionBar.leadingAnchor.constraint(equalTo: leadingAnchor),
+            keyboardDismissalActionBar.trailingAnchor.constraint(equalTo: trailingAnchor),
+            keyboardDismissalActionBar.bottomAnchor.constraint(equalTo: bottomAnchor),
             
             closeShadowView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -UX.horizontalInset),
             closeShadowView.centerYAnchor.constraint(equalTo: centerYAnchor),

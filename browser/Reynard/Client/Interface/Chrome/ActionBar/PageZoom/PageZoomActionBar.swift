@@ -9,7 +9,6 @@ import UIKit
 
 final class PageZoomActionBar: UIView {
     private enum UX {
-        static let backgroundHeight: CGFloat = 62
         static let controlsHeight: CGFloat = 38
         static let controlsWidth: CGFloat = 184
         static let controlButtonWidth: CGFloat = 55
@@ -170,8 +169,6 @@ final class PageZoomActionBar: UIView {
     
     private func configureConstraints() {
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(equalToConstant: UX.backgroundHeight),
-            
             backgroundView.topAnchor.constraint(equalTo: topAnchor),
             backgroundView.leadingAnchor.constraint(equalTo: leadingAnchor),
             backgroundView.trailingAnchor.constraint(equalTo: trailingAnchor),

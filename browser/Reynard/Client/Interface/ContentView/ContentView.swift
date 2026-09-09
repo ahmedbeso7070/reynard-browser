@@ -376,6 +376,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
     
     func relocateFocusedInput(
         above keyboardFrame: CGRect,
+        bottomInset: CGFloat = 0,
         animationDuration: TimeInterval,
         animationOptions: UIView.AnimationOptions
     ) {
@@ -396,7 +397,8 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
         superview?.layoutIfNeeded()
         let newOffset = calculateFocusedInputOffset(
             focusedInputBottom: focusedInputBottom,
-            keyboardFrame: keyboardFrame
+            keyboardFrame: keyboardFrame,
+            bottomInset: bottomInset
         )
         guard abs(newOffset - focusedInputOffset) > UX.focusedInputOffsetThreshold else {
             return
@@ -409,13 +411,17 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
     
     private func calculateFocusedInputOffset(
         focusedInputBottom: CGFloat,
-        keyboardFrame: CGRect
+        keyboardFrame: CGRect,
+        bottomInset: CGFloat
     ) -> CGFloat {
         let unshiftedFrame = frame.offsetBy(dx: 0, dy: focusedInputOffset)
         let keyboardOverlap = max(0, unshiftedFrame.maxY - keyboardFrame.minY)
         let visibleBottom = max(
             0,
-            unshiftedFrame.height - keyboardOverlap - UX.focusedInputBottomClearance
+            unshiftedFrame.height
+            - keyboardOverlap
+            - bottomInset
+            - UX.focusedInputBottomClearance
         )
         return max(0, focusedInputBottom - visibleBottom)
     }
