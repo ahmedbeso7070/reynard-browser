@@ -896,6 +896,7 @@ final class BrowserViewController: UIViewController, GeckoScreenOrientationDeleg
         let animation = keyboardAnimation(from: notification)
         let isInHardwareKeyboardMode = tabManager.selectedTab?.session.isInHardwareKeyboardMode() == true
         let shouldShowKeyboardDismissal = !tabOverview.isPresented
+        && browserLayout.interfaceIdiom == .phone
         && keyboardInset > 0
         && !isInHardwareKeyboardMode
         && isEditingTextInWebView()
