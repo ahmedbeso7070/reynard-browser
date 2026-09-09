@@ -186,11 +186,15 @@ extension ContextMenuCoordinator: UIContextMenuInteractionDelegate {
             return nil
         }
         isPresenting = false
+        let newTabDisposition = Prefs.BrowsingSettings.openLinksInNewTabsBehavior == .openInBackground
+        ? TabOpenDisposition.backgroundTab
+        : .newTab
         
         if case let .image(url, _) = context.target,
            let imageConfiguration = ImagePreviewMenu.configuration(
             for: context,
             showsPreview: context.allowsPreview && Prefs.BrowsingSettings.showImagePreviews,
+            isPrivate: host.contextMenuSelectedTabIsPrivate,
             sourceView: host.contextMenuSourceView,
             shareImage: { [weak host] image, sourceView, sourceRect in
                 host?.contextMenuPresentShareSheet(
@@ -200,13 +204,10 @@ extension ContextMenuCoordinator: UIContextMenuInteractionDelegate {
                 )
             },
             openLinkInNewTab: { [weak host] url in
-                host?.contextMenuOpenLink(url, disposition: .newTab)
+                host?.contextMenuOpenLink(url, disposition: newTabDisposition)
             },
             openLinkInNewPrivateTab: { [weak host] url in
                 host?.contextMenuOpenLink(url, disposition: .newPrivateTab)
-            },
-            openLinkInBackground: { [weak host] url in
-                host?.contextMenuOpenLink(url, disposition: .backgroundTab)
             },
             openImageInNewTab: { [weak host] in
                 host?.contextMenuOpenLink(url, disposition: .newTab)
@@ -226,13 +227,10 @@ extension ContextMenuCoordinator: UIContextMenuInteractionDelegate {
                 self?.linkPreview = preview
             },
             openInNewTab: { [weak self] in
-                self?.openLinkPreview(disposition: .newTab)
+                self?.openLinkPreview(disposition: newTabDisposition)
             },
             openInNewPrivateTab: { [weak self] in
                 self?.openLinkPreview(disposition: .newPrivateTab)
-            },
-            openInBackground: { [weak self] in
-                self?.openLinkPreview(disposition: .backgroundTab)
             },
             shareLink: { [weak host] url, sourceView, sourceRect in
                 host?.contextMenuPresentShareSheet(

@@ -71,6 +71,7 @@ final class BrowserPreferences {
             key("BrowsingSettings", "showLinkPreviews"): true,
             key("BrowsingSettings", "showImagePreviews"): true,
             key("BrowsingSettings", "openLinksInExternalApps"): true,
+            key("BrowsingSettings", "openLinksInNewTabsBehavior"): OpenLinksInNewTabsBehavior.switchTabImmediately.rawValue,
             key("BrowsingSettings", "defaultPageZoomLevel"): PageZoomLevels.defaultLevel,
             
             // New Tab
@@ -309,6 +310,16 @@ final class BrowserPreferences {
             }
             set {
                 prefs.set(newValue, forSetting: "BrowsingSettings", key: "openLinksInExternalApps")
+            }
+        }
+        
+        static var openLinksInNewTabsBehavior: OpenLinksInNewTabsBehavior {
+            get {
+                let rawValue = prefs.string(forSetting: "BrowsingSettings", key: "openLinksInNewTabsBehavior") ?? OpenLinksInNewTabsBehavior.switchTabImmediately.rawValue
+                return OpenLinksInNewTabsBehavior(rawValue: rawValue) ?? .switchTabImmediately
+            }
+            set {
+                prefs.set(newValue.rawValue, forSetting: "BrowsingSettings", key: "openLinksInNewTabsBehavior")
             }
         }
         

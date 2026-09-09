@@ -13566,6 +13566,7 @@
       }
     },
     "Links" : {
+      "comment" : "Browsing settings section title",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -16304,6 +16305,17 @@
         }
       }
     },
+    "Open in Background" : {
+      "comment" : "Open links in new tab behavior",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open in Background"
+          }
+        }
+      }
+    },
     "Open in Files" : {
       "localizations" : {
         "cs" : {
@@ -16478,64 +16490,6 @@
         }
       }
     },
-    "Open Link in Background" : {
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otevřít odkaz na pozadí"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Im Hintergrund öffnen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Open Link in Background"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ouvrir le lien en arrière-plan"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "リンクをバックグラウンドで開く"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Otwórz Link w Tle"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Открыть Страницу в Фоне"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在后台标签页打开链接"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在背景標籤頁中開啟連結"
-          }
-        }
-      }
-    },
     "Open Link in New Private Tab" : {
       "localizations" : {
         "cs" : {
@@ -16706,6 +16660,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在外部 App 中開啟連結"
+          }
+        }
+      }
+    },
+    "Open Links in New Tabs" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Links in New Tabs"
           }
         }
       }
@@ -22778,6 +22742,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在網址列上向上滑動以查看已開啟的標籤頁"
+          }
+        }
+      }
+    },
+    "Switch Tab Immediately" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch Tab Immediately"
           }
         }
       }
