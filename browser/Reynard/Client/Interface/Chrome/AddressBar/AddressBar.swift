@@ -279,14 +279,6 @@ final class AddressBar: UIView {
         return textField.resignFirstResponder()
     }
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        addressBarBackground.layer.shadowPath = UIBezierPath(
-            roundedRect: addressBarBackground.bounds,
-            cornerRadius: UX.addressBarBackgroundCornerRadius
-        ).cgPath
-    }
-    
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else {
