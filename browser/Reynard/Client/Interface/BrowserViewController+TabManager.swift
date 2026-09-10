@@ -71,12 +71,6 @@ extension BrowserViewController: TabManagerDelegate {
         browserChrome.updatePageZoomLevel(selectedTab.session.settings.pageZoom.level)
         updateNavigationButtons()
         
-        contentView.setTab(
-            selectedTab,
-            pageBackgroundColor: sessionManager.pageBackgroundColor(for: selectedTab.session)
-        )
-        addonCoordinator.handleTabSelectionChange(selectedIndex: index, previousIndex: previousIndex)
-        
         if !tabOverview.isPresented && !tabOverview.isTransitionRunning {
             tabOverview.setMode(TabOverview.Mode(tabMode: tabManager.selectedTabMode), animated: false)
             tabOverview.reloadTabs()
@@ -85,6 +79,12 @@ extension BrowserViewController: TabManagerDelegate {
         tabBar.reloadTabs()
         homepageOverlayCoordinator.updatePresentation(animated: false)
         updateBrowserLayout(animated: animateTabBarVisibility)
+        
+        contentView.setTab(
+            selectedTab,
+            pageBackgroundColor: sessionManager.pageBackgroundColor(for: selectedTab.session)
+        )
+        addonCoordinator.handleTabSelectionChange(selectedIndex: index, previousIndex: previousIndex)
         
         if isShowingFullscreenMedia,
            fullscreenSession !== selectedTab.session {
