@@ -69,7 +69,7 @@ You can also [click here](https://altdirect.app/?url=https://github.com/minh-ton
 
 > [!IMPORTANT]
 > - **LiveContainer is not supported** due to its own limitations.
-> - Sideloading methods that use a distribution certificate for signing are **not supported**.⁠
+> - Sideloading using a distribution certificate for signing are **not supported**.⁠
 > - Other sideloading methods may be **incompatible with Reynard**, and **no support will be provided** for issues arising from them.
 
 ## Preview
@@ -195,6 +195,11 @@ To run Reynard, open `Reynard.xcodeproj` in Xcode and build/run it from there.
 This project initially started out of curiosity. I wanted to see if I could get Gecko to run without the [BrowserEngineKit](https://developer.apple.com/documentation/browserenginekit) framework, so it could be further modified to support iOS versions as far back as possible. I got it working, and since then, I’ve been focusing on developing engine patches for better integration with iOS, fixing bugs, and turning Reynard into a full, usable browser.
 
 If you’ve come across this repository and find it interesting, I’d love to get help or collaborate on it. I’m learning as I go here and don’t have much prior experience with iOS app development or with Gecko itself, so any contributions, feedback, or pointers would be greatly appreciated.
+
+You can also help translate Reynard into more languages, or support the time I spend working on the project through the links below.
+
+<a href="https://crowdin.com/project/reynard-browser"><img height="40" src="https://github.com/user-attachments/assets/5f00681e-c31a-4c7f-87fe-caaf67ee52d7" /></a>
+<a href="https://buymeacoffee.com/hnimnot"><img height="40" src="https://github.com/user-attachments/assets/ea72836b-3d60-4ffc-be93-d62d5df51047" /></a>
 
 ## Acknowledgements
 - [LiveContainer](https://github.com/LiveContainer/LiveContainer): app extension handling and NSExtension usage.
