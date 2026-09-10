@@ -1,12 +1,17 @@
 name: Build Reynard
 
 on:
-  push:
-    branches: [main]
-  schedule:
-    - cron: '0 18 * * *'
-  workflow_dispatch:
+  workflow_call:
     inputs:
+      checkout_ref:
+        description: Git ref to build
+        required: true
+        type: string
+      nightly:
+        description: Build nightly version
+        required: false
+        default: false
+        type: boolean
       build_normal_ipa:
         description: Build normal IPA
         required: false
@@ -28,7 +33,7 @@ permissions:
 
 jobs:
   prepare:
-    if: ${{ github.repository_owner == 'minh-ton' && (github.event_name != 'push' || startsWith(github.event.head_commit.message, 'Bump version to ')) }}
+    if: ${{ github.repository_owner == 'minh-ton' }}
     name: Select build variants
     runs-on: ubuntu-latest
     outputs:
@@ -42,15 +47,11 @@ jobs:
           BUILD_NORMAL_IPA: ${{ inputs.build_normal_ipa }}
           BUILD_TROLLSTORE_TIPA: ${{ inputs.build_trollstore_tipa }}
           BUILD_JAILBROKEN_IPA: ${{ inputs.build_jailbroken_ipa }}
-          RUN_SCHEDULED_BUILD: ${{ github.event_name == 'schedule' }}
-          RUN_RELEASE_BUILD: ${{ github.event_name == 'push' }}
         with:
           script: |
             const variants = [];
 
             if (
-              process.env.RUN_SCHEDULED_BUILD === 'true' ||
-              process.env.RUN_RELEASE_BUILD === 'true' ||
               process.env.BUILD_NORMAL_IPA === 'true' ||
               process.env.BUILD_TROLLSTORE_TIPA === 'true'
             ) {
@@ -62,8 +63,6 @@ jobs:
             }
 
             if (
-              process.env.RUN_SCHEDULED_BUILD === 'true' ||
-              process.env.RUN_RELEASE_BUILD === 'true' ||
               process.env.BUILD_JAILBROKEN_IPA === 'true'
             ) {
               variants.push({
@@ -92,6 +91,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.checkout_ref }}
           fetch-depth: 0
           submodules: false
 
@@ -166,22 +166,22 @@ jobs:
         run: brew install ldid
 
       - name: Build app
-        run: ./tools/release/build-app.sh --no-signing ${{ github.event_name == 'schedule' && '--nightly' || '' }}
+        run: ./tools/release/build-app.sh --no-signing ${{ inputs.nightly && '--nightly' || '' }}
 
       - name: Create IPA
-        if: ${{ matrix.variant == 'standard' && (github.event_name != 'workflow_dispatch' || inputs.build_normal_ipa) }}
+        if: ${{ matrix.variant == 'standard' && inputs.build_normal_ipa }}
         run: ./tools/release/create-ipa.sh
 
       - name: Create TrollStore TIPA
-        if: ${{ matrix.variant == 'standard' && (github.event_name != 'workflow_dispatch' || inputs.build_trollstore_tipa) }}
+        if: ${{ matrix.variant == 'standard' && inputs.build_trollstore_tipa }}
         run: ./tools/release/create-ipa.sh --trollstore
 
       - name: Create Jailbroken IPA
-        if: ${{ matrix.variant == 'nojemalloc' && (github.event_name != 'workflow_dispatch' || inputs.build_jailbroken_ipa) }}
+        if: ${{ matrix.variant == 'nojemalloc' && inputs.build_jailbroken_ipa }}
         run: ./tools/release/create-ipa.sh --jailbroken
 
       - name: Upload IPA
-        if: ${{ matrix.variant == 'standard' && (github.event_name != 'workflow_dispatch' || inputs.build_normal_ipa) }}
+        if: ${{ matrix.variant == 'standard' && inputs.build_normal_ipa }}
         uses: actions/upload-artifact@v4
         with:
           name: Reynard.ipa
@@ -189,7 +189,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload TrollStore TIPA
-        if: ${{ matrix.variant == 'standard' && (github.event_name != 'workflow_dispatch' || inputs.build_trollstore_tipa) }}
+        if: ${{ matrix.variant == 'standard' && inputs.build_trollstore_tipa }}
         uses: actions/upload-artifact@v4
         with:
           name: Reynard-TrollStore.tipa
@@ -197,7 +197,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Jailbroken IPA
-        if: ${{ matrix.variant == 'nojemalloc' && (github.event_name != 'workflow_dispatch' || inputs.build_jailbroken_ipa) }}
+        if: ${{ matrix.variant == 'nojemalloc' && inputs.build_jailbroken_ipa }}
         uses: actions/upload-artifact@v4
         with:
           name: Reynard-Jailbroken.ipa
