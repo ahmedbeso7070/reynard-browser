@@ -133,6 +133,14 @@ final class TopToolbar: UIView {
         
         return safeAreaLayoutGuide
     }()
+
+    private var compactAddressBarHorizontalInset: CGFloat {
+        if #available(iOS 26.0, *) {
+            return 0
+        }
+
+        return UX.topToolbarHorizontalInset
+    }
     
     private var heightConstraint: NSLayoutConstraint!
     private var contentTopConstraint: NSLayoutConstraint!
@@ -189,8 +197,14 @@ final class TopToolbar: UIView {
                 addressBar.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -UX.topToolbarAddressBarVerticalSpacing),
             ]
             compactAddressBarConstraints = [
-                addressBar.leadingAnchor.constraint(equalTo: contentLayoutGuide.leadingAnchor),
-                addressBar.trailingAnchor.constraint(equalTo: contentLayoutGuide.trailingAnchor),
+                addressBar.leadingAnchor.constraint(
+                    equalTo: contentLayoutGuide.leadingAnchor,
+                    constant: compactAddressBarHorizontalInset
+                ),
+                addressBar.trailingAnchor.constraint(
+                    equalTo: contentLayoutGuide.trailingAnchor,
+                    constant: -compactAddressBarHorizontalInset
+                ),
                 addressBar.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UX.topToolbarAddressBarVerticalSpacing),
                 addressBar.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -UX.topToolbarAddressBarVerticalSpacing),
             ]
