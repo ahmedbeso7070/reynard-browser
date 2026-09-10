@@ -474,7 +474,6 @@ final class BrowserViewController: UIViewController, GeckoScreenOrientationDeleg
             dismissAddressBarEditingAndOverlays()
         }
         applyBrowserLayout(animated: animated)
-        homepageOverlayCoordinator.updatePresentedLayout()
         homepageOverlayCoordinator.updatePresentation(animated: false)
         searchOverlayCoordinator.updatePresentedLayout()
         
