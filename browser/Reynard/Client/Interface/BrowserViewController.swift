@@ -87,6 +87,30 @@ final class BrowserViewController: UIViewController, GeckoScreenOrientationDeleg
     
     // MARK: - Lifecycle
     
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        if #available(iOS 26.0, *) {
+            return .default
+        }
+        
+        guard browserLayout.chromeMode == .phone,
+              !tabOverview.isPresented else {
+            return .default
+        }
+        
+        switch contentView.state.overlayPresentation {
+        case .visible(.homepage):
+            let foregroundColor = HomepageWallpaper.foregroundColor(for: .embedded(layout: browserLayout))
+            return foregroundColor.isLightColor(in: traitCollection) ? .lightContent : .darkContent
+        case .visible(.search):
+            return .default
+        case .hidden:
+            let backgroundColor = tabManager.selectedTab.map {
+                sessionManager.pageBackgroundColor(for: $0.session)
+            } ?? .systemBackground
+            return backgroundColor.isLightColor(in: traitCollection) ? .darkContent : .lightContent
+        }
+    }
+    
     override var prefersStatusBarHidden: Bool {
         return isShowingFullscreenMedia
     }
@@ -253,6 +277,9 @@ final class BrowserViewController: UIViewController, GeckoScreenOrientationDeleg
     // MARK: - Browser Layout
     
     private func configureBrowserInterface() {
+        contentView.onAppearanceChanged = { [weak self] in
+            self?.setNeedsStatusBarAppearanceUpdate()
+        }
         browserChrome.configureAddressBar(
             delegate: self,
             searchDelegate: self,
@@ -533,6 +560,7 @@ final class BrowserViewController: UIViewController, GeckoScreenOrientationDeleg
         applyTabOverviewLayout()
         applyBrowserChromeLayout(animated: animated)
         updateNavigationButtons()
+        setNeedsStatusBarAppearanceUpdate()
     }
     
     private func applyFullscreenLayout() {
@@ -758,6 +786,12 @@ final class BrowserViewController: UIViewController, GeckoScreenOrientationDeleg
     // MARK: - Notifications
     
     private func observeNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(setNeedsStatusBarAppearanceUpdate),
+            name: .homepageSettingsDidChange,
+            object: nil
+        )
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(keyboardFrameWillChange(_:)),

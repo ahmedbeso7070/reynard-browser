@@ -64,7 +64,11 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
         let mode: Mode
     }
     
-    private(set) var state: State = .browsing
+    private(set) var state: State = .browsing {
+        didSet {
+            onAppearanceChanged?()
+        }
+    }
     private var layoutState = LayoutState(mode: .standard)
     private var session: GeckoSession?
     private var dynamicToolbarMaxHeight: CGFloat = 0
@@ -92,6 +96,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
     var onHistorySwipeBegan: (() -> Void)?
     var onHistorySwipeEnded: (() -> Void)?
     var onVerticalScroll: ((CGFloat) -> Void)?
+    var onAppearanceChanged: (() -> Void)?
     
     private var topConstraint: NSLayoutConstraint?
     private var bottomConstraint: NSLayoutConstraint?
@@ -500,6 +505,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
         self.session = tab?.session
         resetFocusedInputRelocation()
         webContentView.setTab(tab, pageBackgroundColor: pageBackgroundColor)
+        onAppearanceChanged?()
         tab?.session.setDynamicToolbarMaxHeight(dynamicToolbarMaxHeight)
         tab?.session.setContentBottomOffset(contentBottomOffset)
         updatePullToRefreshAvailability()
@@ -507,6 +513,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
     
     func setPageBackgroundColor(_ color: UIColor) {
         webContentView.setPageBackgroundColor(color)
+        onAppearanceChanged?()
     }
     
     func resetScrollTracking() {
