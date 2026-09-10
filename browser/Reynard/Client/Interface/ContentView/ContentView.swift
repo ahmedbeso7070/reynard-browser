@@ -227,6 +227,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
         bottomAnchor: NSLayoutYAxisAnchor
     ) {
         self.layoutState = layoutState
+        webContentView.setFullscreen(layoutState.mode == .fullscreen)
         applyLayoutState(topAnchor: topAnchor, bottomAnchor: bottomAnchor)
     }
     

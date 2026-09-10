@@ -175,6 +175,11 @@ final class WebContentView: UIView, UIScrollViewDelegate {
         pageBackgroundBottomConstraint = bottomConstraint
     }
     
+    func setFullscreen(_ fullscreen: Bool) {
+        pageBackgroundView.isHidden = fullscreen
+        backgroundColor = fullscreen ? .black : .systemBackground
+    }
+    
     func setVisibility(_ visibility: VisibilityState) {
         guard self.visibility != visibility else {
             return

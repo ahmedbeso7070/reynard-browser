@@ -1,5 +1,5 @@
 diff --git a/widget/uikit/nsWindow.mm b/widget/uikit/nsWindow.mm
-index ba3fc1051a01..025eedd58080 100644
+index ba3fc1051a01..b2ef7f168d4e 100644
 --- a/widget/uikit/nsWindow.mm
 +++ b/widget/uikit/nsWindow.mm
 @@ -11,7 +11,6 @@
@@ -162,7 +162,7 @@ index ba3fc1051a01..025eedd58080 100644
    if ((self = [super initWithFrame:inFrame])) {
      mGeckoChild = inChild;
  
-+    self.backgroundColor = [UIColor systemBackgroundColor];
++    self.backgroundColor = [UIColor clearColor];
 +
      mRootCALayer = [[CALayer layer] retain];
      mRootCALayer.position = CGPointZero;
@@ -370,7 +370,7 @@ index ba3fc1051a01..025eedd58080 100644
 +- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
 +  [super traitCollectionDidChange:previousTraitCollection];
 +
-+  self.backgroundColor = [UIColor systemBackgroundColor];
++  self.backgroundColor = [UIColor clearColor];
 +
 +  if (previousTraitCollection &&
 +      self.traitCollection.userInterfaceStyle ==
@@ -1096,7 +1096,7 @@ index ba3fc1051a01..025eedd58080 100644
  int32_t nsWindow::RoundsWidgetCoordinatesTo() {
    if (BackingScaleFactor() == 2.0) {
      return 2;
-@@ -1117,10 +1378,158 @@ - (UIAccessibilityContainerType)accessibilityContainerType {
+@@ -1117,10 +1378,159 @@ - (UIAccessibilityContainerType)accessibilityContainerType {
    return 1;
  }
  
@@ -1127,7 +1127,8 @@ index ba3fc1051a01..025eedd58080 100644
 +
 +  for (const auto& update : aUpdates) {
 +    [mNativeView->mTouchSupport
-+        compositorScrollPositionDidChange:update.mMetrics.mVisualScrollOffset.y *
++        compositorScrollPositionDidChange:update.mMetrics.mVisualScrollOffset
++                                              .y *
 +                                          update.mMetrics.mZoom.scale /
 +                                          BackingScaleFactor()
 +                                     zoom:update.mMetrics.mZoom.scale];
@@ -1255,7 +1256,7 @@ index ba3fc1051a01..025eedd58080 100644
  void nsWindow::HandleMainThreadCATransaction() {
    // Trigger a synchronous OMTC composite. This will call NextSurface and
    // NotifySurfaceReady on the compositor thread to update mNativeLayerRoot's
-@@ -1198,6 +1607,8 @@ - (UIAccessibilityContainerType)accessibilityContainerType {
+@@ -1198,6 +1608,8 @@ - (UIAccessibilityContainerType)accessibilityContainerType {
    }
  }
  
@@ -1264,7 +1265,7 @@ index ba3fc1051a01..025eedd58080 100644
  EventDispatcher* nsWindow::GetEventDispatcher() const {
    if (mIOSView) {
      return mIOSView->mEventDispatcher;
-@@ -1205,28 +1616,131 @@ - (UIAccessibilityContainerType)accessibilityContainerType {
+@@ -1205,28 +1617,131 @@ - (UIAccessibilityContainerType)accessibilityContainerType {
    return nullptr;
  }
  
@@ -1410,7 +1411,7 @@ index ba3fc1051a01..025eedd58080 100644
  NS_IMPL_ISUPPORTS(IOSView, nsIGeckoViewEventDispatcher, nsIGeckoViewView)
  
  nsresult IOSView::GetInitData(JSContext* aCx,
-@@ -1247,6 +1761,52 @@ - (UIView*)view {
+@@ -1247,6 +1762,52 @@ - (UIView*)view {
    return mWindow ? (UIView*)mWindow->GetNativeData(NS_NATIVE_WIDGET) : nil;
  }
  
@@ -1463,7 +1464,7 @@ index ba3fc1051a01..025eedd58080 100644
  - (void)close {
    if (mWindow) {
      if (IOSView* iosView = mWindow->GetIOSView()) {
-@@ -1260,6 +1820,10 @@ - (void)close {
+@@ -1260,6 +1821,10 @@ - (void)close {
      mOuterWindow = nullptr;
    }
  }
@@ -1474,7 +1475,7 @@ index ba3fc1051a01..025eedd58080 100644
  @end
  
  id<GeckoViewWindow> GeckoViewOpenWindow(NSString* aId,
-@@ -1302,6 +1866,7 @@ - (void)close {
+@@ -1302,6 +1867,7 @@ - (void)close {
    MOZ_ASSERT(window);
  
    window->SetIOSView(iosView.forget());
