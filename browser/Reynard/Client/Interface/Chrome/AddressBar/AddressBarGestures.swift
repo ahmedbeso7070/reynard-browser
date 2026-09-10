@@ -931,6 +931,14 @@ extension AddressBarGestures: UIGestureRecognizerDelegate {
             return false
         }
         
+        var view: UIView? = addressBar
+        while let currentView = view {
+            guard !currentView.isHidden, currentView.alpha > 0.01 else {
+                return false
+            }
+            view = currentView.superview
+        }
+
         guard gestureRecognizer.view !== addressBar,
               let delegate else {
             return true
