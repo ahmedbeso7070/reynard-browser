@@ -99,7 +99,7 @@ final class BrowserPreferences {
             key("AppearanceSettings", "showsFullWebsiteAddress"): false,
             key("AppearanceSettings", "showsLandscapeTabBar"): true,
             key("AppearanceSettings", "pullToRefreshEnabled"): true,
-            key("AppearanceSettings", "scrollToHideToolbarEnabled"): true,
+            key("AppearanceSettings", "scrollToHideToolbarEnabled"): UIDevice.current.userInterfaceIdiom == .phone,
             key("AppearanceSettings", "swipeAddressBarSidewaysEnabled"): true,
             key("AppearanceSettings", "swipeAddressBarUpEnabled"): true,
             

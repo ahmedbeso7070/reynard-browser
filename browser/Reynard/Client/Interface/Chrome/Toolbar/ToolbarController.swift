@@ -85,6 +85,7 @@ final class ToolbarController {
         let offsetLimits = toolbarOffsetLimits(for: chromeMode)
         let canHideToolbar = isToolbarEnabled
         && Prefs.AppearanceSettings.scrollToHideToolbarEnabled
+        && !(chromeMode == .compact && rootView.traitCollection.userInterfaceIdiom == .pad)
         let maxToolbarOffset = canHideToolbar ? offsetLimits.total : 0
         let maxTopToolbarOffset = canHideToolbar ? offsetLimits.top : 0
         
