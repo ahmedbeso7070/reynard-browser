@@ -76,6 +76,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
     private var toolbarTopOffset: CGFloat = 0
     private var webContentBottomOffset: CGFloat = 0
     private var focusedInputOffset: CGFloat = 0
+    private var focusedInputTask: Task<Void, Never>?
     
     private var canGoBack = false
     private var canGoForward = false
@@ -119,6 +120,7 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
     }
     
     deinit {
+        focusedInputTask?.cancel()
         NotificationCenter.default.removeObserver(self)
     }
     
@@ -386,11 +388,12 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
         animationDuration: TimeInterval,
         animationOptions: UIView.AnimationOptions
     ) {
+        focusedInputTask?.cancel()
         guard let session,
               let engineView = session.engineView,
               engineView.isFirstResponder,
               let textInput = engineView as? UITextInput,
-              let selectedTextRange = textInput.selectedTextRange else {
+              textInput.selectedTextRange != nil else {
             resetFocusedInputRelocation(
                 animationDuration: animationDuration,
                 animationOptions: animationOptions
@@ -398,44 +401,53 @@ final class ContentView: UIView, UIGestureRecognizerDelegate {
             return
         }
         
-        let caretRect = textInput.caretRect(for: selectedTextRange.end)
-        let focusedInputBottom = engineView.convert(caretRect, to: self).maxY
-        superview?.layoutIfNeeded()
-        let newOffset = calculateFocusedInputOffset(
-            focusedInputBottom: focusedInputBottom,
-            keyboardFrame: keyboardFrame,
-            bottomInset: bottomInset
-        )
-        guard abs(newOffset - focusedInputOffset) > UX.focusedInputOffsetThreshold else {
-            return
+        focusedInputTask = Task { @MainActor [weak self] in
+            guard let self else { return }
+            let bottomRatio = await session.focusedInputBottomRatio()
+            guard !Task.isCancelled,
+                  engineView.isFirstResponder,
+                  let selectedTextRange = textInput.selectedTextRange,
+                  let bottomRatio else { return }
+            
+            superview?.layoutIfNeeded()
+            let caretRect = textInput.caretRect(for: selectedTextRange.end)
+            guard !caretRect.isEmpty else { return }
+            let engineFrame = engineView.convert(engineView.bounds, to: self)
+            let newOffset = calculateFocusedInputOffset(
+                focusedInputBottom: engineFrame.minY + engineFrame.height * bottomRatio,
+                webContentBottom: engineFrame.maxY,
+                caretRect: engineView.convert(caretRect, to: self),
+                keyboardTop: keyboardFrame.minY - bottomInset - frame.minY - focusedInputOffset
+            )
+            guard abs(newOffset - focusedInputOffset) > UX.focusedInputOffsetThreshold else {
+                return
+            }
+            
+            focusedInputOffset = newOffset
+            updateLayoutOffsets()
+            animateLayout(duration: animationDuration, options: animationOptions)
         }
-        
-        focusedInputOffset = newOffset
-        updateLayoutOffsets()
-        animateLayout(duration: animationDuration, options: animationOptions)
     }
     
     private func calculateFocusedInputOffset(
         focusedInputBottom: CGFloat,
-        keyboardFrame: CGRect,
-        bottomInset: CGFloat
+        webContentBottom: CGFloat,
+        caretRect: CGRect,
+        keyboardTop: CGFloat
     ) -> CGFloat {
-        let unshiftedFrame = frame.offsetBy(dx: 0, dy: focusedInputOffset)
-        let keyboardOverlap = max(0, unshiftedFrame.maxY - keyboardFrame.minY)
-        let visibleBottom = max(
-            0,
-            unshiftedFrame.height
-            - keyboardOverlap
-            - bottomInset
-            - UX.focusedInputBottomClearance
-        )
-        return max(0, focusedInputBottom - visibleBottom)
+        let maximumViewOffset = max(0, webContentBottom - keyboardTop)
+        let visibleBottom = max(0, keyboardTop - UX.focusedInputBottomClearance)
+        let elementOffset = max(0, focusedInputBottom - visibleBottom)
+        let maximumOffset = min(maximumViewOffset, max(0, caretRect.minY - UX.focusedInputBottomClearance))
+        return min(maximumOffset, elementOffset)
     }
     
     func resetFocusedInputRelocation(
         animationDuration: TimeInterval = 0,
         animationOptions: UIView.AnimationOptions = []
     ) {
+        focusedInputTask?.cancel()
+        focusedInputTask = nil
         guard focusedInputOffset != 0 else { return }
         
         focusedInputOffset = 0
