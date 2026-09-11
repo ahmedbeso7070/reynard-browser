@@ -49,16 +49,23 @@ final class PageZoomActionBar: UIView {
         view.layer.shadowOpacity = UX.shadowOpacity
         view.layer.shadowRadius = UX.shadowRadius
         view.layer.shadowOffset = UX.shadowOffset
+        view.layer.shadowColor = UIColor.black.cgColor
         return view
     }()
     
     private let controlsBackground: UIVisualEffectView = {
         let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.contentView.backgroundColor = UIColor.systemBackground.withAlphaComponent(UX.backgroundAlpha)
+        view.contentView.backgroundColor = UIColor { traitCollection in
+            let backgroundColor: UIColor = traitCollection.userInterfaceStyle == .dark
+            ? .tertiarySystemBackground.withAlphaComponent(0.8)
+            : .systemBackground.withAlphaComponent(0.8)
+            return backgroundColor.resolvedColor(with: traitCollection)
+        }
         view.layer.cornerCurve = .continuous
         view.layer.cornerRadius = UX.controlsCornerRadius
         view.layer.borderWidth = UX.borderWidth
+        view.layer.borderColor = UIColor.separator.withAlphaComponent(0.2).cgColor
         view.clipsToBounds = true
         return view
     }()
@@ -85,8 +92,6 @@ final class PageZoomActionBar: UIView {
         configureAppearance()
         configureHierarchy()
         configureConstraints()
-        updateShadowColor()
-        updateBorderColor()
         setZoomLevel(zoomLevel)
     }
     
@@ -100,16 +105,6 @@ final class PageZoomActionBar: UIView {
             roundedRect: controlsShadowView.bounds,
             cornerRadius: UX.controlsCornerRadius
         ).cgPath
-    }
-    
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else {
-            return
-        }
-        
-        updateShadowColor()
-        updateBorderColor()
     }
     
     // MARK: - Updates
@@ -210,16 +205,6 @@ final class PageZoomActionBar: UIView {
             zoomInButton.widthAnchor.constraint(equalToConstant: UX.controlButtonWidth),
             
         ])
-    }
-    
-    private func updateShadowColor() {
-        let color: UIColor = traitCollection.userInterfaceStyle == .dark ? .white : .black
-        controlsShadowView.layer.shadowColor = color.cgColor
-    }
-    
-    private func updateBorderColor() {
-        let color = UIColor.separator.withAlphaComponent(0.2)
-        controlsBackground.layer.borderColor = color.cgColor
     }
     
     private func makeControlButton(named: String, action: Selector) -> UIButton {

@@ -36,6 +36,7 @@ final class TabOverviewCard: UICollectionViewCell {
         static let tabTitleFontSize: CGFloat = 14
         static let reorderLiftAnimationDuration: TimeInterval = 0.18
         static let swipeDismissMaximumFade: CGFloat = 0.35
+        static let borderWidth: CGFloat = 0.5
     }
     
     enum TransitionState {
@@ -66,6 +67,7 @@ final class TabOverviewCard: UICollectionViewCell {
         view.layer.shadowOpacity = UX.webpagePreviewRestingShadowOpacity
         view.layer.shadowRadius = UX.webpagePreviewRestingShadowRadius
         view.layer.shadowOffset = UX.webpagePreviewRestingShadowOffset
+        view.layer.shadowColor = UIColor.black.cgColor
         view.layer.masksToBounds = false
         return view
     }()
@@ -83,6 +85,8 @@ final class TabOverviewCard: UICollectionViewCell {
         view.backgroundColor = .systemBackground
         view.layer.cornerRadius = UX.webpagePreviewCornerRadius
         view.layer.cornerCurve = .continuous
+        view.layer.borderWidth = UX.borderWidth
+        view.layer.borderColor = UIColor.separator.withAlphaComponent(0.2).cgColor
         view.layer.masksToBounds = true
         return view
     }()
@@ -168,7 +172,6 @@ final class TabOverviewCard: UICollectionViewCell {
         configureHierarchy()
         configureConstraints()
         configureActions()
-        updateWebpagePreviewShadowColor()
         applyReorderState(animated: false)
     }
     
@@ -183,7 +186,6 @@ final class TabOverviewCard: UICollectionViewCell {
         webpagePreviewImageView.image = nil
         faviconImageView.image = Self.fallbackFaviconImage
         onClose = nil
-        updateWebpagePreviewShadowColor()
         setTransitionState(.visible)
         setReorderState(.resting, animated: false)
         setSwipeOffset(0, progress: 0)
@@ -441,12 +443,6 @@ final class TabOverviewCard: UICollectionViewCell {
         webpagePreviewLeadingConstraint.constant = inset
         webpagePreviewTrailingConstraint.constant = -inset
         webpagePreviewBottomConstraint.constant = -inset
-    }
-    
-    private func updateWebpagePreviewShadowColor() {
-        webpagePreviewShadowView.layer.shadowColor = UITraitCollection.current.userInterfaceStyle == .dark
-        ? UIColor.white.cgColor
-        : UIColor.black.cgColor
     }
     
     // MARK: - Actions

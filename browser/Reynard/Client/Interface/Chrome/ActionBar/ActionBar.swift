@@ -27,7 +27,6 @@ final class ActionBar: UIView {
         static let closeButtonCornerRadius: CGFloat = 14
         static let horizontalInset: CGFloat = 13
         static let closeSymbolPointSize: CGFloat = 10
-        static let backgroundAlpha: CGFloat = 0.34
         static let shadowOpacity: Float = 0.14
         static let shadowRadius: CGFloat = 8
         static let shadowOffset = CGSize(width: 0, height: 3)
@@ -94,6 +93,7 @@ final class ActionBar: UIView {
         view.backgroundColor = .clear
         view.layer.cornerCurve = .continuous
         view.layer.cornerRadius = UX.closeButtonCornerRadius
+        view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOpacity = UX.shadowOpacity
         view.layer.shadowRadius = UX.shadowRadius
         view.layer.shadowOffset = UX.shadowOffset
@@ -103,10 +103,16 @@ final class ActionBar: UIView {
     private let closeBackground: UIVisualEffectView = {
         let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.contentView.backgroundColor = UIColor.systemBackground.withAlphaComponent(UX.backgroundAlpha)
+        view.contentView.backgroundColor = UIColor { traitCollection in
+            let backgroundColor: UIColor = traitCollection.userInterfaceStyle == .dark
+            ? .tertiarySystemBackground.withAlphaComponent(0.8)
+            : .systemBackground.withAlphaComponent(0.8)
+            return backgroundColor.resolvedColor(with: traitCollection)
+        }
         view.layer.cornerCurve = .continuous
         view.layer.cornerRadius = UX.closeButtonCornerRadius
         view.layer.borderWidth = UX.borderWidth
+        view.layer.borderColor = UIColor.separator.withAlphaComponent(0.2).cgColor
         view.clipsToBounds = true
         return view
     }()
@@ -136,8 +142,6 @@ final class ActionBar: UIView {
         configureAppearance()
         configureHierarchy()
         configureConstraints()
-        updateShadowColor()
-        updateBorderColor()
         setItem(nil)
         
         findInPageActionBar.onDismiss = { [weak self] in
@@ -158,16 +162,6 @@ final class ActionBar: UIView {
             roundedRect: closeShadowView.bounds,
             cornerRadius: UX.closeButtonCornerRadius
         ).cgPath
-    }
-    
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        guard previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle else {
-            return
-        }
-        
-        updateShadowColor()
-        updateBorderColor()
     }
     
     // MARK: - Presentation
@@ -273,15 +267,5 @@ final class ActionBar: UIView {
             topBorderView.trailingAnchor.constraint(equalTo: trailingAnchor),
             topBorderView.heightAnchor.constraint(equalToConstant: UX.borderWidth),
         ])
-    }
-    
-    private func updateShadowColor() {
-        let color: UIColor = traitCollection.userInterfaceStyle == .dark ? .white : .black
-        closeShadowView.layer.shadowColor = color.cgColor
-    }
-    
-    private func updateBorderColor() {
-        let color = UIColor.separator.withAlphaComponent(0.2)
-        closeBackground.layer.borderColor = color.cgColor
     }
 }
