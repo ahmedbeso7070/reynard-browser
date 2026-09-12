@@ -1,0 +1,14 @@
+diff --git a/gfx/layers/apz/src/Axis.cpp b/gfx/layers/apz/src/Axis.cpp
+index e32c7724062f..842ad1411971 100644
+--- a/gfx/layers/apz/src/Axis.cpp
++++ b/gfx/layers/apz/src/Axis.cpp
+@@ -714,7 +714,8 @@ SideBits AxisY::ScrollableDirectionsWithDynamicToolbar(
+     ParentLayerMargin fixedLayerMargins = ViewAs<ParentLayerPixel>(
+         aFixedLayerMargins, PixelCastJustification::ScreenIsParentLayerForRoot);
+ 
+-    if (!mAsyncPanZoomController->IsZero(fixedLayerMargins.bottom)) {
++    if (!mAsyncPanZoomController->IsZero(fixedLayerMargins.top +
++                                         fixedLayerMargins.bottom)) {
+       directions |= SideBits::eTop;
+     }
+     if (mAsyncPanZoomController->FuzzyGreater(

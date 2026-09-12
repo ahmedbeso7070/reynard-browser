@@ -35,6 +35,7 @@ final class ToolbarController {
     private var toolbarOffset: CGFloat = 0
     private var maxToolbarOffset: CGFloat = 0
     private var maxTopToolbarOffset: CGFloat = 0
+    private var scrollPosition: CGFloat = 0
     private var snapOrigin: CGFloat = 0
     private var targetOffset: CGFloat = 0
     private var snapStartTime: CFTimeInterval = 0
@@ -66,8 +67,8 @@ final class ToolbarController {
             self?.unlock(for: .historyNavigation)
         }
         
-        contentView.onVerticalScroll = { [weak self] scrollDelta in
-            self?.handleScroll(delta: scrollDelta)
+        contentView.onVerticalScroll = { [weak self] scrollDelta, position in
+            self?.handleScroll(delta: scrollDelta, position: position)
         }
     }
     
@@ -89,13 +90,9 @@ final class ToolbarController {
         let maxToolbarOffset = canHideToolbar ? offsetLimits.total : 0
         let maxTopToolbarOffset = canHideToolbar ? offsetLimits.top : 0
         
-        var webContentBottomOffset: CGFloat = 0
-        if isToolbarEnabled {
-            webContentBottomOffset = offsetLimits.top
-            if !canHideToolbar && !extendsContentBehindToolbar {
-                webContentBottomOffset -= offsetLimits.total
-            }
-        }
+        let webContentBottomOffset = isToolbarEnabled && !canHideToolbar && !extendsContentBehindToolbar
+        ? offsetLimits.top - offsetLimits.total
+        : 0
         
         if self.chromeMode != chromeMode
             || abs(maxToolbarOffset - self.maxToolbarOffset) > 0.5
@@ -107,6 +104,7 @@ final class ToolbarController {
         }
         contentView.setToolbarLimits(
             maxHeight: maxToolbarOffset,
+            contentTopInset: maxTopToolbarOffset,
             webContentBottomOffset: webContentBottomOffset
         )
     }
@@ -120,12 +118,10 @@ final class ToolbarController {
         case .phone:
             return (bottomToolbarHeight, 0)
         case .compact:
-            let topContentHeight = max(0, topToolbarHeight - rootView.safeAreaInsets.top)
-            return (topContentHeight + bottomToolbarHeight, topContentHeight)
+            return (topToolbarHeight + bottomToolbarHeight, topToolbarHeight)
         case .pad:
             let topChromeHeight = topToolbarHeight + (tabBar.visibility != .hidden ? tabBar.bounds.height : 0)
-            let maxOffset = max(0, topChromeHeight - rootView.safeAreaInsets.top)
-            return (maxOffset, maxOffset)
+            return (topChromeHeight, topChromeHeight)
         }
     }
     
@@ -135,7 +131,6 @@ final class ToolbarController {
             return
         }
         toolbarOffset = clampedToolbarOffset
-        let topToolbarHeight = browserChrome.topToolbarTransitionFrame(in: rootView).height
         let bottomToolbarHeight = browserChrome.bottomToolbarTransitionFrame(in: rootView).height
         let topToolbarOffset: CGFloat
         let topContentOffset: CGFloat
@@ -153,19 +148,21 @@ final class ToolbarController {
             tabBarOffset = 0
         case .compact:
             let progress = toolbarOffset / max(maxToolbarOffset, 1)
-            topToolbarOffset = min(topToolbarHeight * progress, maxTopToolbarOffset)
-            topContentOffset = topToolbarOffset
-            topToolbarContentAlpha = 1 - (topToolbarOffset / max(maxTopToolbarOffset, 1))
+            let topToolbarTravel = max(0, maxTopToolbarOffset - rootView.safeAreaInsets.top)
+            topContentOffset = maxTopToolbarOffset * progress
+            topToolbarOffset = min(topContentOffset, topToolbarTravel)
+            topToolbarContentAlpha = 1 - (topToolbarOffset / max(topToolbarTravel, 1))
             bottomToolbarOffset = bottomToolbarHeight * progress
             bottomToolbarContentAlpha = 1 - (bottomToolbarOffset / max(bottomToolbarHeight, 1))
             tabBarOffset = 0
         case .pad:
-            topToolbarOffset = toolbarOffset
+            let topToolbarTravel = max(0, maxTopToolbarOffset - rootView.safeAreaInsets.top)
+            topToolbarOffset = min(toolbarOffset, topToolbarTravel)
             topContentOffset = toolbarOffset
-            topToolbarContentAlpha = 1 - (topToolbarOffset / max(maxTopToolbarOffset, 1))
+            topToolbarContentAlpha = 1 - (topToolbarOffset / max(topToolbarTravel, 1))
             bottomToolbarOffset = 0
             bottomToolbarContentAlpha = 1
-            tabBarOffset = toolbarOffset
+            tabBarOffset = topToolbarOffset
         }
         if isBottomToolbarCollapsed {
             bottomToolbarOffset = chromeMode == .pad ? 0 : bottomToolbarHeight
@@ -183,7 +180,7 @@ final class ToolbarController {
         tabBar.transform = CGAffineTransform(translationX: 0, y: -tabBarOffset)
         contentView.applyToolbarOffsets(
             top: topContentOffset,
-            bottom: topToolbarOffset + bottomToolbarOffset,
+            bottom: bottomToolbarOffset,
             refresh: refresh
         )
     }
@@ -201,23 +198,25 @@ final class ToolbarController {
     
     // MARK: - Scroll Handling
     
-    private func handleScroll(delta: CGFloat) {
+    private func handleScroll(delta: CGFloat, position: CGFloat) {
+        scrollPosition = max(0, position)
         guard Prefs.AppearanceSettings.scrollToHideToolbarEnabled,
               maxToolbarOffset > 0,
               lockReasons.isEmpty else {
             return
         }
         cancelSnap()
-        setToolbarOffset(toolbarOffset + delta * UX.toolbarScrollFactor)
+        var maximumOffset = maxToolbarOffset
+        if scrollPosition < maxTopToolbarOffset {
+            maximumOffset *= scrollPosition / maxTopToolbarOffset
+        }
+        setToolbarOffset(min(toolbarOffset + delta * UX.toolbarScrollFactor, maximumOffset))
         scheduleSnap()
     }
     
     // MARK: - Snapping
     
     private func scheduleSnap() {
-        guard chromeMode == .phone else {
-            return
-        }
         let snap = DispatchWorkItem { [weak self] in
             self?.beginSnap()
         }
@@ -228,7 +227,8 @@ final class ToolbarController {
     private func beginSnap(to destination: CGFloat? = nil) {
         pendingSnap = nil
         snapOrigin = toolbarOffset
-        targetOffset = destination ?? (snapOrigin < maxToolbarOffset / 2 ? 0 : maxToolbarOffset)
+        let shouldExpand = scrollPosition < maxTopToolbarOffset || snapOrigin < maxToolbarOffset / 2
+        targetOffset = destination ?? (shouldExpand ? 0 : maxToolbarOffset)
         guard snapOrigin != targetOffset else {
             setToolbarOffset(targetOffset, refresh: true)
             return

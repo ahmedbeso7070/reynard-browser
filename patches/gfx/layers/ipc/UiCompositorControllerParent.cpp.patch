@@ -1,18 +1,23 @@
 diff --git a/gfx/layers/ipc/UiCompositorControllerParent.cpp b/gfx/layers/ipc/UiCompositorControllerParent.cpp
-index b04c706d6845..fa97dad26de3 100644
+index b04c706d6845..ed2c9ace50a3 100644
 --- a/gfx/layers/ipc/UiCompositorControllerParent.cpp
 +++ b/gfx/layers/ipc/UiCompositorControllerParent.cpp
-@@ -114,14 +114,14 @@ mozilla::ipc::IPCResult UiCompositorControllerParent::RecvMaxToolbarHeight(
+@@ -112,16 +112,16 @@ mozilla::ipc::IPCResult UiCompositorControllerParent::RecvMaxToolbarHeight(
+   return IPC_OK();
+ }
  
- mozilla::ipc::IPCResult UiCompositorControllerParent::RecvFixedBottomOffset(
-     const int32_t& aOffset) {
+-mozilla::ipc::IPCResult UiCompositorControllerParent::RecvFixedBottomOffset(
+-    const int32_t& aOffset) {
 -#if defined(MOZ_WIDGET_ANDROID)
++mozilla::ipc::IPCResult UiCompositorControllerParent::RecvFixedLayerMargins(
++    const int32_t& aTop, const int32_t& aBottom, const int32_t& aTopInset) {
 +#if defined(MOZ_WIDGET_ANDROID) || defined(MOZ_WIDGET_UIKIT)
    CompositorBridgeParent* parent =
        CompositorBridgeParent::GetCompositorBridgeParentFromLayersId(
            mRootLayerTreeId);
    if (parent) {
-     parent->SetFixedLayerMargins(0, aOffset);
+-    parent->SetFixedLayerMargins(0, aOffset);
++    parent->SetFixedLayerMargins(aTop, aBottom, aTopInset);
    }
 -#endif  // defined(MOZ_WIDGET_ANDROID)
 +#endif

@@ -1,0 +1,134 @@
+diff --git a/gfx/layers/apz/src/APZCTreeManager.cpp b/gfx/layers/apz/src/APZCTreeManager.cpp
+index 525cc79ed3c3..4f0b7e140fe0 100644
+--- a/gfx/layers/apz/src/APZCTreeManager.cpp
++++ b/gfx/layers/apz/src/APZCTreeManager.cpp
+@@ -4,6 +4,7 @@
+ 
+ #include "APZCTreeManager.h"
+ 
++#include <algorithm>
+ #include <stack>
+ #include <unordered_set>
+ #include <utility>
+@@ -995,14 +996,8 @@ void APZCTreeManager::SampleForWebRender(const Maybe<VsyncId>& aVsyncId,
+ 
+   for (const StickyPositionInfo& info : mStickyPositionInfo) {
+     MOZ_ASSERT(info.mStickyPositionAnimationId.isSome());
+-    SideBits sides = SidesStuckToRootContent(
++    ScreenPoint translation = ComputeStickyMarginsOffset(
+         info, AsyncTransformConsumer::eForCompositing, lock);
+-    if (sides == SideBits::eNone) {
+-      continue;
+-    }
+-
+-    ScreenPoint translation =
+-        ComputeFixedMarginsOffset(lock, sides, mGeckoFixedLayerMargins);
+ 
+     LayerToParentLayerMatrix4x4 transform =
+         LayerToParentLayerMatrix4x4::Translation(ViewAs<ParentLayerPixel>(
+@@ -2290,15 +2285,9 @@ void APZCTreeManager::AdjustEventPointForDynamicToolbar(
+     aEventPoint -= RoundedToInt(ComputeFixedMarginsOffset(
+         lock, aHit.mFixedPosSides, mGeckoFixedLayerMargins));
+   } else if (aHit.mNode && aHit.mNode->GetStickyPositionAnimationId()) {
+-    SideBits sideBits = SideBits::eNone;
+-    {
+-      RecursiveMutexAutoLock lock(mTreeLock);
+-      sideBits = SidesStuckToRootContent(
+-          aHit.mNode.Get(lock), AsyncTransformConsumer::eForEventHandling);
+-    }
+-    MutexAutoLock lock(mMapLock);
+-    aEventPoint -= RoundedToInt(
+-        ComputeFixedMarginsOffset(lock, sideBits, mGeckoFixedLayerMargins));
++    RecursiveMutexAutoLock lock(mTreeLock);
++    aEventPoint -= RoundedToInt(ComputeStickyMarginsOffset(
++        aHit.mNode.Get(lock), AsyncTransformConsumer::eForEventHandling));
+   }
+ }
+ 
+@@ -3748,16 +3737,16 @@ bool APZCTreeManager::IsFixedToRootContent(
+   return targetApzc && targetApzc->IsRootContent();
+ }
+ 
+-SideBits APZCTreeManager::SidesStuckToRootContent(
++ScreenPoint APZCTreeManager::ComputeStickyMarginsOffset(
+     const HitTestingTreeNode* aNode, AsyncTransformConsumer aMode) const {
+   MutexAutoLock lock(mMapLock);
+-  return SidesStuckToRootContent(StickyPositionInfo(aNode), aMode, lock);
++  return ComputeStickyMarginsOffset(StickyPositionInfo(aNode), aMode, lock);
+ }
+ 
+-SideBits APZCTreeManager::SidesStuckToRootContent(
++ScreenPoint APZCTreeManager::ComputeStickyMarginsOffset(
+     const StickyPositionInfo& aStickyInfo, AsyncTransformConsumer aMode,
+     const MutexAutoLock& aProofOfMapLock) const {
+-  SideBits result = SideBits::eNone;
++  ScreenPoint result;
+ 
+   ScrollableLayerGuid::ViewID stickyTarget = aStickyInfo.mStickyPosTarget;
+   if (stickyTarget == ScrollableLayerGuid::NULL_SCROLL_ID) {
+@@ -3785,13 +3774,30 @@ SideBits APZCTreeManager::SidesStuckToRootContent(
+               aMode, AsyncTransformComponents{AsyncTransformComponent::eLayout})
+           .mTranslation;
+ 
++  SideBits sides = SideBits::eNone;
+   if (apz::IsStuckAtTop(translation.y, aStickyInfo.mStickyScrollRangeInner,
+                         aStickyInfo.mStickyScrollRangeOuter)) {
+-    result |= SideBits::eTop;
++    sides |= SideBits::eTop;
+   }
+   if (apz::IsStuckAtBottom(translation.y, aStickyInfo.mStickyScrollRangeInner,
+                            aStickyInfo.mStickyScrollRangeOuter)) {
+-    result |= SideBits::eBottom;
++    sides |= SideBits::eBottom;
++  }
++  result = ComputeFixedMarginsOffset(aProofOfMapLock, sides,
++                                      mGeckoFixedLayerMargins);
++  if ((aStickyInfo.mFixedPosSides & SideBits::eTop) != SideBits::eNone) {
++    const float topMargin = ComputeFixedMarginsOffset(
++        aProofOfMapLock, SideBits::eTop, mGeckoFixedLayerMargins).y;
++    const float scrollDelta = -translation.y;
++    const float inner = aStickyInfo.mStickyScrollRangeInner.YMost();
++    const float outer = aStickyInfo.mStickyScrollRangeOuter.YMost();
++    // Start sticking when the header reaches the toolbar.
++    const float adjustment =
++        std::clamp(scrollDelta + topMargin, inner, outer) -
++        std::clamp(scrollDelta, inner, outer);
++    if (adjustment != 0 || (sides & SideBits::eTop) != SideBits::eNone) {
++      result.y = adjustment;
++    }
+   }
+   return result;
+ }
+@@ -3959,11 +3965,13 @@ void APZCTreeManager::SendSubtreeTransformsToChromeMainThread(
+ }
+ 
+ void APZCTreeManager::SetFixedLayerMargins(ScreenIntCoord aTop,
+-                                           ScreenIntCoord aBottom) {
++                                           ScreenIntCoord aBottom,
++                                           ScreenIntCoord aTopInset) {
+   {
+     MutexAutoLock lock(mMapLock);
+     mCompositorFixedLayerMargins.top = ScreenCoord(aTop);
+     mCompositorFixedLayerMargins.bottom = ScreenCoord(aBottom);
++    mContentTopInset = ScreenCoord(aTopInset);
+   }
+   {
+     RecursiveMutexAutoLock lock(mTreeLock);
+@@ -3973,9 +3981,15 @@ void APZCTreeManager::SetFixedLayerMargins(ScreenIntCoord aTop,
+ 
+ void APZCTreeManager::SetFixedLayerMarginsOnRootContentApzcs(
+     const RecursiveMutexAutoLock& aProofOfTreeLock) {
+-  ScreenMargin margins = GetCompositorFixedLayerMargins();
++  ScreenMargin margins;
++  ScreenCoord topInset;
++  {
++    MutexAutoLock lock(mMapLock);
++    margins = GetCompositorFixedLayerMargins(lock);
++    topInset = mContentTopInset;
++  }
+   for (auto* apzc : mRootContentApzcs) {
+-    apzc->SetFixedLayerMargins(margins);
++    apzc->SetFixedLayerMargins(margins, topInset);
+   }
+ }
+ 

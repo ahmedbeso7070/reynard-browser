@@ -52,7 +52,7 @@ final class WebContentView: UIView, UIScrollViewDelegate {
     var onHistorySwipeDidUpdate: ((CGFloat) -> Void)?
     var onHistorySwipeDidComplete: ((GeckoEdgeSwipeDirections) -> Void)?
     var onHistorySwipeDidEnd: (() -> Void)?
-    var onVerticalScroll: ((CGFloat) -> Void)?
+    var onVerticalScroll: ((CGFloat, CGFloat) -> Void)?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -152,7 +152,7 @@ final class WebContentView: UIView, UIScrollViewDelegate {
             
             refreshIndicatorContainer.centerXAnchor.constraint(equalTo: centerXAnchor),
             refreshIndicatorContainer.topAnchor.constraint(
-                equalTo: topAnchor,
+                equalTo: safeAreaLayoutGuide.topAnchor,
                 constant: (UX.refreshingContentOffset - refreshIndicator.intrinsicContentSize.height) / 2
             ),
             refreshIndicator.topAnchor.constraint(equalTo: refreshIndicatorContainer.topAnchor),
@@ -479,7 +479,7 @@ extension WebContentView: GeckoViewInteractionDelegate {
         }
         let scrollDelta = currentState.position - previousState.position
         if scrollDelta != 0 {
-            onVerticalScroll?(scrollDelta)
+            onVerticalScroll?(scrollDelta, currentState.position)
         }
     }
     

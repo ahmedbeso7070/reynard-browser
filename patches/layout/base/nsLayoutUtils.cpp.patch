@@ -1,0 +1,16 @@
+diff --git a/layout/base/nsLayoutUtils.cpp b/layout/base/nsLayoutUtils.cpp
+index 22f2b63b9dc1..69e7599d8718 100644
+--- a/layout/base/nsLayoutUtils.cpp
++++ b/layout/base/nsLayoutUtils.cpp
+@@ -1351,6 +1351,11 @@ SideBits nsLayoutUtils::GetSideBitsForFixedPositionContent(
+     if (!position->GetAnchorResolvedInset(eSideTop, params)->IsAuto()) {
+       sides |= SideBits::eTop;
+     }
++    if (!(sides & (SideBits::eTop | SideBits::eBottom)) &&
++        aFixedPosFrame->StyleDisplay()->mPosition ==
++            StylePositionProperty::Fixed) {
++      sides |= SideBits::eTop;
++    }
+   }
+   return sides;
+ }
