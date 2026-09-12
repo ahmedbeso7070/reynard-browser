@@ -21,7 +21,7 @@ final class ToolbarController {
     }
     
     private enum UX {
-        static let toolbarScrollFactor: CGFloat = 0.5
+        static let toolbarScrollFactor: CGFloat = 0.8
         static let snapDelay: TimeInterval = 0.1
         static let snapDuration: TimeInterval = 0.15
     }
