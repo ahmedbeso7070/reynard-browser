@@ -59,7 +59,7 @@ Reynard is available as a standard build, a TrollStore build[^2], and a jailbrok
 [^3]: The jailbroken build provides automatic JIT enablement and better performance.
 
 > [!NOTE]
-> Although jailbroken builds are available, using Reynard in a jailbroken environment is not recommended. Tweaks and other system modifications may affect the browser's performance, stability, or functionality, and issues resulting from them may receive limited support.
+> Although jailbroken builds are available, using Reynard on a jailbroken device is not recommended. Tweaks and other system modifications may affect the browser's performance, stability, or functionality, and support for resulting issues may be limited. **On any jailbroken device**, disable tweak injection for Reynard and its extensions using tools such as [Choicy](https://github.com/opa334/Choicy).
 
 **For AltStore or SideStore installations:**
 
@@ -69,7 +69,7 @@ You can also [click here](https://altdirect.app/?url=https://github.com/minh-ton
 
 > [!IMPORTANT]
 > - **LiveContainer is not supported** due to its own limitations.
-> - Sideloading using a distribution certificate for signing are **not supported**.⁠
+> - Sideloading using a distribution certificate for signing is **not supported**.⁠
 > - Other sideloading methods may be **incompatible with Reynard**, and **no support will be provided** for issues arising from them.
 
 ## Preview
